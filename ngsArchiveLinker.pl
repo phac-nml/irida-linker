@@ -155,9 +155,9 @@ else{
 
 my %sampleFiles;
 foreach my $id(keys %samples){
-	my $sampleUrl = $samples{$id};
+	my $sample = $samples{$id};
 	print "Getting sequence files for sample $id\n" if $verbose;
-	my @files = getSequenceFilesForSample($sampleUrl,$agent,$head);
+	my @files = getSequenceFilesForSample($sample,$agent,$head);
 	
 	foreach my $file (@files)
 	{
@@ -366,9 +366,14 @@ sub buildProjectURL{
 	my $projectId = shift;
 	my $client = shift;
 	my $headers = shift;
-
-	$url = "$url/projects/$projectId";
+	
 	my $respdat = makeJsonRequest($url,$agent,$headers);
+	my $json = from_json($respdat->content);
+
+	$url = getRelFromLinks($json->{resource}->{links},'projects');
+	$url = "$url/$projectId";
+
+	$respdat = makeJsonRequest($url,$agent,$headers);
 	checkResponseCode($respdat,$url);	
 
 	return $url;
@@ -441,11 +446,11 @@ sub getSamplesForProject{
 
 #Get all the sequence file URLs associated with a sample
 sub getSequenceFilesForSample{
-	my $sampleUrl = shift;
+	my $sample = shift;
 	my $agent = shift;
 	my $headers = shift;
 	
-	my $url = getRelFromLinks($sampleUrl->{links},"sample/sequenceFiles");
+	my $url = getRelFromLinks($sample->{links},"sample/sequenceFiles");
 	my $respdat = makeJsonRequest($url,$agent,$headers);
 	checkResponseCode($respdat,$url);	
 	my $resp = from_json($respdat->content);
