@@ -138,25 +138,26 @@ checkServerStatus($url,$agent,$head);
 
 $url = buildProjectURL($url,$projectId,$agent,$head);
 
-my $projectName = getProjectName($url,$agent,$head);
+my $project = getProject($url,$agent,$head);
+my $projectName = $project->{resource}->{name};
 
 my %samples;
 
 #get the sample URLs from either the requested samples or all for the selected project
 if(@sampleIds){
 	print "Reading samples ". join(",",@sampleIds) . " from project $projectId\n";
-	%samples = getSampleUrlsFromList(\@sampleIds,$agent,$head,$url);
+	%samples = getSampleUrlsFromList($project, \@sampleIds,$agent,$head);
 }
 else{
 	print "Listing all samples from project $projectId\n";
-	%samples = getSamplesForProject($url,$agent,$head);
+	%samples = getSamplesForProject($project,$agent,$head);
 }
 
 my %sampleFiles;
 foreach my $id(keys %samples){
-	my $sampleUrl = $samples{$id};
+	my $sample = $samples{$id};
 	print "Getting sequence files for sample $id\n" if $verbose;
-	my @files = getSequenceFilesForSample($sampleUrl,$agent,$head);
+	my @files = getSequenceFilesForSample($sample,$agent,$head);
 	
 	foreach my $file (@files)
 	{
@@ -343,15 +344,15 @@ sub downloadFile{
 
 #get all the URLS for samples that are passed by the user
 sub getSampleUrlsFromList{
+	my $project = shift;
 	my $sampleIds = shift;
 	my $agent = shift;
 	my $headers = shift;
-	my $url = shift;
 	
 	my %samples;
 
 	foreach my $id(@$sampleIds){
-		my($sequencerId,$sampleUrl) = getSampleDetails($url,$id,$agent,$headers);
+		my($sequencerId,$sampleUrl) = getSampleDetails($project,$id,$agent,$headers);
 
 		$samples{$sequencerId} = $sampleUrl;
 	}
@@ -365,9 +366,14 @@ sub buildProjectURL{
 	my $projectId = shift;
 	my $client = shift;
 	my $headers = shift;
-
-	$url = "$url/projects/$projectId";
+	
 	my $respdat = makeJsonRequest($url,$agent,$headers);
+	my $json = from_json($respdat->content);
+
+	$url = getRelFromLinks($json->{resource}->{links},'projects');
+	$url = "$url/$projectId";
+
+	$respdat = makeJsonRequest($url,$agent,$headers);
 	checkResponseCode($respdat,$url);	
 
 	return $url;
@@ -375,28 +381,49 @@ sub buildProjectURL{
 
 #build the URL for a sample by its numerical ID and check that it exists
 sub getSampleDetails{
-	my $projectUrl = shift;
+	my $project = shift;
 	my $sampleId = shift;
 	my $agent = shift;
 	my $headers = shift;
-	
-	my $url = "$projectUrl/samples/$sampleId";
+
+	#get the URL of project samples
+	my $url = getRelFromLinks($project->{resource}->{links},'project/samples');
+	$url = "$url/$sampleId";
+
 	my $respdat = makeJsonRequest($url,$agent,$headers);
 
 	checkResponseCode($respdat,$url);
 	my $json = from_json($respdat->content);
 	my $id = $json->{resource}->{sampleName};
 
-	return ($id,$url);
+	$url = getRelFromLinks($json->{resource}->{links}, 'self');
+	
+	return ($id,$json->{resource});
+}
+
+#get the given rel from the given collection of links
+sub getRelFromLinks{
+	my $links = shift;
+	my $rel = shift;
+	
+	my $url;
+
+	foreach my $link(@{$links}){
+		if($link->{rel} eq $rel){
+			$url = $link->{href};
+		}
+	}
+	
+	return $url;
 }
 
 #Get all the sample URLs for a particular project
 sub getSamplesForProject{
-	my $projectUrl = shift;
+	my $project = shift;
 	my $agent = shift;
 	my $head = shift;
 
-	my $url = "$projectUrl/samples";
+	my $url = getRelFromLinks($project->{resource}->{links},'project/samples');
 	
 	my $ret = makeJsonRequest($url,$agent,$head);
 
@@ -411,7 +438,7 @@ sub getSamplesForProject{
 		my $sampleURL = $sample->{links}->[0]->{href};
 		my $sequencerId = $sample->{sampleName};
 		
-		$samples{$sequencerId} = $sampleURL;
+		$samples{$sequencerId} = $sample;
 	}
 
 	return %samples;
@@ -419,11 +446,11 @@ sub getSamplesForProject{
 
 #Get all the sequence file URLs associated with a sample
 sub getSequenceFilesForSample{
-	my $sampleUrl = shift;
+	my $sample = shift;
 	my $agent = shift;
 	my $headers = shift;
-
-	my $url = "$sampleUrl/sequenceFiles";
+	
+	my $url = getRelFromLinks($sample->{links},"sample/sequenceFiles");
 	my $respdat = makeJsonRequest($url,$agent,$headers);
 	checkResponseCode($respdat,$url);	
 	my $resp = from_json($respdat->content);
@@ -440,8 +467,8 @@ sub getSequenceFilesForSample{
 	return @files;
 }
 
-#get the name of the project from the API
-sub getProjectName{
+#get the project from the API
+sub getProject{
 	my $projectURL = shift;
 	my $agent = shift;
 	my $headers = shift;
@@ -450,8 +477,7 @@ sub getProjectName{
 	checkResponseCode($respdat,$projectURL);
 	my $resp = from_json($respdat->content);
 	
-	my $name = $resp->{resource}->{name};
-	return $name;
+	return $resp;
 }
 
 #check that the server is available
