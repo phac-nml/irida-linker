@@ -14,12 +14,12 @@ use Term::ReadKey;
 use HTTP::Status qw(:constants :is status_message);
 use Config::Simple;
 use Cwd;
-use OAuth::Lite2::Client::UsernameAndPassword;
+use HTTP::Tiny;
 use strict;
 use warnings;
 
 if(!@ARGV){ #if no args, print usage message
-	pod2usage(1);
+	pod2usage(0);
 }
 
 my $client_id="defaultLinker";
@@ -179,17 +179,24 @@ sub getToken{
 	my $client_id = shift;
 	my $client_secret = shift;
 
-	my $client = OAuth::Lite2::Client::UsernameAndPassword->new(
-        id               => $client_id,
-        secret           => $client_secret,
-        access_token_uri => $url."/oauth/token");
 
-	my $token = $client->get_access_token(username=>$username,password=>$password);
-	if(!defined $token){
-		print "Couldn't get OAuth token: " . $client->last_response->status_line . "\n";
-		exit(1);
-	}
-	my $tokenstr = $token->access_token;
+        my $response = HTTP::Tiny->new->post_form($url."/oauth/token", {
+            client_id => $client_id,
+            client_secret => $client_secret,
+            grant_type => "password",
+            username => $username,
+            password => $password });
+        
+        
+        my $oauth_info = decode_json($response->{'content'});
+
+        my $tokenstr = $oauth_info->{'access_token'};
+
+	if(!defined $tokenstr){
+            print "Couldn't get OAuth token: " . $response->{'status'} . "\n";
+            print $oauth_info->{'error'} . ': ' . $oauth_info->{'error_description'} ."\n";
+            exit(1);
+        }
 	
 	return $tokenstr;
 }

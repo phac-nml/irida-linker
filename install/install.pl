@@ -12,7 +12,7 @@ use constant DEFAULT_GALAXY_APIKEY=>"None";
 #Install PERL packages
 my @requiredPackages = ("LWP::UserAgent","LWP::Simple","MIME::Base64","JSON",
 			"Getopt::Long","Pod::Usage","File::Path","File::Basename",
-			"Term::ReadKey","HTTP::Status","Config::Simple","OAuth::Lite2::Client::UsernameAndPassword");
+			"Term::ReadKey","HTTP::Status","Config::Simple");
 
 my $binLoc = $FindBin::Bin;
 my $defaultLib = "$binLoc/../lib/";
