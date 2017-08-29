@@ -2,11 +2,22 @@
 ## Overview
 The NGS Archive Linker is a Perl script used to generate a structure of links for files stored in the NGS archive.  You are able to get links to the files in an entire project, or to specific samples within a project.
 
-## Install
+## Install Options
 
-* *Note*: The install script requires cpanm for Perl module installation and pip for Python lib installation.
 
-Run the script install/install.pl.  This script will install a number of Perl modules to the lib/ directory, install a number of Python modules to the python-deps/ directory, and install a configuration file in your home directory.
+### 1. Install with bioconda
+
+```shell
+conda install irida-linker
+```
+
+### 2. Install using install.pl script provided
+* The script will install a number of Perl modules to the lib/ directory, and install a configuration file in your home directory.
+* *Note*: The install script requires cpanm for Perl module installation.
+
+```shell
+install/install.pl
+```
 
 ## Link Structure
 Projects and samples in the NGS Archive are stored with the assumption that a sample resides within a project.  To represent this structure on the filesystem, links are generated in the following fashion:

@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 use FindBin;
 use strict;
@@ -12,7 +12,7 @@ use constant DEFAULT_GALAXY_APIKEY=>"None";
 #Install PERL packages
 my @requiredPackages = ("LWP::UserAgent","LWP::Simple","MIME::Base64","JSON",
 			"Getopt::Long","Pod::Usage","File::Path","File::Basename",
-			"Term::ReadKey","HTTP::Status","Config::Simple","OAuth::Lite2::Client::UsernameAndPassword");
+			"Term::ReadKey","HTTP::Status","Config::Simple");
 
 my $binLoc = $FindBin::Bin;
 my $defaultLib = "$binLoc/../lib/";
@@ -37,15 +37,6 @@ foreach my $pack(@requiredPackages){
 	}
 }
 
-##Install python libs
-my $pythonDepsDir = "$binLoc/../python-deps/";
-my $ret = option("Install required python libs into $pythonDepsDir?", "y");
-if($ret eq "y"){
-    print "Installing required python libs into $pythonDepsDir\n";
-    my $cmd = "export PYTHONUSERBASE=$pythonDepsDir; pip install --user -r $binLoc/requirements.txt";
-    print "Running command: $cmd\n";
-    system($cmd);
-}
 
 ##Install config file
 my $iridaDir = $ENV{HOME}."/.irida/";
