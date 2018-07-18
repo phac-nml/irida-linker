@@ -22,6 +22,9 @@ if(!@ARGV){ #if no args, print usage message
 	pod2usage(0);
 }
 
+my $version = '1.0.2';
+my $print_version = 0;
+
 my $client_id="defaultLinker";
 my $client_secret="defaultLinkerSecret";
 
@@ -46,10 +49,13 @@ GetOptions(
 	"d|download"=>\$download,
 	"v|verbose"=>\$verbose,
 	"vv|vverbose"=>\$vverbose,
+	"version"=>\$print_version,
 	"h|help"=>\$help
 ) or pod2usage(1);
 ##Error checking
 pod2usage(1) if $help;
+print "$version\n" and exit(0) if ($print_version);
+
 if(!defined $projectId){
 	print "Error: Project ID must be defined.  Use --help option for argument details.\n";
 	exit(1);
@@ -616,6 +622,10 @@ Print verbose messages.
 =item B<-h, --help>
 
 Display a help message.
+
+=item B<--version>
+
+Print version.
 
 =back
 
