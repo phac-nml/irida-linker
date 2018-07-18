@@ -238,16 +238,18 @@ sub createLinks{
 
 			foreach my $fileref(@{$samples->{$sampleId}}){
 				my $filename = $fileref->{file};
-				if(! -e $filename){
-					die "Error: Script cannot see a file to be linked: $filename.  Ensure you have access to the sequence files directory.";
-				}
 				my $basename = basename($filename);
+
 				my $newfile = "$sampleDir/$basename";
 
 				if($download){
 					downloadFile($fileref->{href},$newfile,$client,$headers,$duplicateLevel);
 				}
 				else{
+					if(! -e $filename){
+						die "Error: Script cannot see a file to be linked: $filename.  Ensure you have access to the sequence files directory.";
+					}
+
 					linkFile($newfile,$filename,$duplicateLevel);
 				}
 			}
