@@ -559,7 +559,7 @@ ngsArchiveLinker.pl - Get links for files stored in the NGS archive
 
 =head1 SYNOPSIS
 
-ngsArchiveLinker.pl -b <API URL> -p <projectId> -d <outputDirectory> [-s <sampleId> ...]
+ngsArchiveLinker.pl -b <API URL> -p <projectId> -o <outputDirectory> [-s <sampleId> ...]
 
 =head1 DESCRIPTION
 
