@@ -42,7 +42,7 @@ foreach my $pack(@requiredPackages){
 my $iridaDir = $ENV{HOME}."/.irida/";
 my $confFile = "$iridaDir/ngs-archive-linker.conf";
 
-$ret = option("Install config file to $confFile?","y");
+my $ret = option("Install config file to $confFile?","y");
 if($ret eq "y"){
 	if(!-d $iridaDir){
 		print "Creating directory $iridaDir\n";
