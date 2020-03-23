@@ -108,6 +108,17 @@ Example -- Linking samples 44, 45, and 46 for project *4* to directory *files*:
 	Reading samples 44,45,46 from project 4
 	Created 6 files for 3 samples in files/4
 
+#### Linking assemblies from a project
+To get links for assemblies within a project, you must add the `--type assembly` option.  This will tell the linker that you want assemblies instead of sequence file `.fastq` files
+	
+Example -- Linking all assemblies from project *4* to directory *files*:
+
+	$ ngsArchiveLinker.pl -b http://irida.ca/api --project 4 --type assembly --output files
+	Enter username: test
+	Enter password: 
+	Listing all samples from project 4
+	Created 1 files for 1 samples in files/4
+
 #### Getting new links for an already existing project
 To get links for a project that already exists on the filesystem, you can use the **--ignore** option.  This will skip over files and samples that have already been linked and only create links for the new samples.
 
