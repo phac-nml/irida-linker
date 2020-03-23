@@ -31,7 +31,7 @@ my $client_secret="defaultLinkerSecret";
 use constant {FAIL_ON_DUPLICATE => 0, IGNORE_DUPLICATES => 1, RENAME_DUPLICATES => 2};
 my @DEFAULT_CONFIG_LOCATIONS = ($FindBin::Bin."/ngs-archive-linker.conf",$ENV{HOME}."/.irida/ngs-archive-linker.conf","/etc/irida/ngs-archive-linker.conf");
 
-my ($baseURL,$projectId, @sampleIds,$directory,$help,$verbose,$vverbose,$username,$password,$ignoreDuplicates,$renameDuplicates,$flatDirectory,$download,$configFile);
+my ($baseURL,$projectId, $fileType, @sampleIds,$directory,$help,$verbose,$vverbose,$username,$password,$ignoreDuplicates,$renameDuplicates,$flatDirectory,$download,$configFile);
 
 $directory = cwd();
 
@@ -39,6 +39,7 @@ GetOptions(
 	"b|baseURL=s"=>\$baseURL,
 	"p|project=s"=>\$projectId,
 	"s|sample=s"=>\@sampleIds,
+	"t|type=s"=>\$fileType,
 	"o|output=s"=>\$directory,
 	"c|config=s"=>\$configFile,
 	"username=s"=>\$username,
@@ -131,6 +132,9 @@ if(!$password){
 	chomp $password;
 }
 
+if(!$fileType){
+	$fileType = "fastq";
+}
 
 my $agent = new LWP::UserAgent;
 my $head = new HTTP::Headers;
@@ -162,12 +166,25 @@ else{
 my %sampleFiles;
 foreach my $id(keys %samples){
 	my $sample = $samples{$id};
-	print "Getting sequence files for sample $id\n" if $verbose;
-	my @files = getSequenceFilesForSample($sample,$agent,$head);
-	
-	foreach my $file (@files)
-	{
-		push(@{$sampleFiles{$id}},$file);
+
+	if($fileType =~ /fastq/){
+		print "Getting sequence files for sample $id\n" if $verbose;
+		my @files = getSequenceFilesForSample($sample,$agent,$head);
+		
+		foreach my $file (@files)
+		{
+			push(@{$sampleFiles{$id}{fastq}},$file);
+		}
+	}
+
+	if($fileType =~ /assembly/){
+		print "Getting assembly files for sample $id\n" if $verbose;
+		my @files = getAssembliesForSample($sample,$agent,$head);
+		
+		foreach my $file (@files)
+		{
+			push(@{$sampleFiles{$id}{assembly}},$file);
+		}
 	}
 }
 
@@ -242,23 +259,8 @@ sub createLinks{
 
 			$sampleCount++;
 
-			foreach my $fileref(@{$samples->{$sampleId}}){
-				my $filename = $fileref->{file};
-				my $basename = basename($filename);
-
-				my $newfile = "$sampleDir/$basename";
-
-				if($download){
-					downloadFile($fileref->{href},$newfile,$client,$headers,$duplicateLevel);
-				}
-				else{
-					if(! -e $filename){
-						die "Error: Script cannot see a file to be linked: $filename.  Ensure you have access to the sequence files directory.";
-					}
-
-					linkFile($newfile,$filename,$duplicateLevel);
-				}
-			}
+			loopFileType($samples->{$sampleId}, "fastq", $download, $sampleDir, $duplicateLevel, $client, $headers);
+			loopFileType($samples->{$sampleId}, "assembly", $download, $sampleDir, $duplicateLevel, $client, $headers);
 		}
 	
 		if($fileCount > 0){
@@ -273,6 +275,35 @@ sub createLinks{
 		print "No sequence files to link for project $projectId\n";
 	}
 
+}
+
+#get the files for the given file type.  Either link or download given the options
+sub loopFileType{
+	my $sample = shift;
+	my $type = shift;
+	my $download = shift;
+	my $sampleDir = shift;
+	my $duplicateLevel = shift;
+	my $client = shift;
+	my $headers = shift;
+
+	foreach my $fileref(@{$sample->{$type}}){
+		my $filename = $fileref->{file};
+		my $basename = basename($filename);
+
+		my $newfile = "$sampleDir/$basename";
+
+		if($download){
+			downloadFile($fileref->{href},$newfile,$client,$headers,$duplicateLevel,$type);
+		}
+		else{
+			if(! -e $filename){
+				die "Error: Script cannot see a file to be linked: $filename.  Ensure you have access to the sequence files directory.";
+			}
+
+			linkFile($newfile,$filename,$duplicateLevel);
+		}
+	}
 }
 
 #check if a file or link exists
@@ -342,12 +373,21 @@ sub downloadFile{
 	my $client = shift;
 	my $headers = shift;
 	my $ignoreDuplicates = shift;
+	my $type = shift;
 	
 	my $writeFile = checkFileExistence($output,$ignoreDuplicates);
+
+	my $accept;
+	if($type eq "fastq"){
+		$accept = "application/fastq";
+	}
+	elsif($type eq "assembly"){
+		$accept = "application/fasta";
+	}
 	
 	if($writeFile){
-	$client->show_progress(1);
-		$head->header(Accept => 'application/fastq');
+		$client->show_progress(1);
+		$head->header(Accept => $accept);
 	
 		my $req = HTTP::Request->new("GET",$href,$head);
 		my $ret = $agent->request($req,$writeFile);
@@ -466,6 +506,29 @@ sub getSequenceFilesForSample{
 	my $headers = shift;
 	
 	my $url = getRelFromLinks($sample->{links},"sample/sequenceFiles");
+	my $respdat = makeJsonRequest($url,$agent,$headers);
+	checkResponseCode($respdat,$url);	
+	my $resp = from_json($respdat->content);
+	my $resources = $resp->{resource}->{resources};
+
+	my @files;
+	foreach my $filedat(@$resources){
+		my $file = $filedat->{file};
+		my $href = $filedat->{links}->[0]->{href};
+		my %ref = ("file"=>$file,"href"=>$href);
+		push(@files,\%ref);
+	}
+
+	return @files;
+}
+
+#Get all the sequence file URLs associated with a sample
+sub getAssembliesForSample{
+	my $sample = shift;
+	my $agent = shift;
+	my $headers = shift;
+	
+	my $url = getRelFromLinks($sample->{links},"sample/assemblies");
 	my $respdat = makeJsonRequest($url,$agent,$headers);
 	checkResponseCode($respdat,$url);	
 	my $resp = from_json($respdat->content);
