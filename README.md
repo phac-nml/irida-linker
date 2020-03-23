@@ -57,6 +57,9 @@ A user is able to use the same output directory for multiple project links.  The
 * -s, --sample [ARG]
   > A sample id to get sequence files for.  Not required.  Multiple samples may be listed as -s 1 -s 2 -s 3...
 
+* -t, --type [ARG]
+  > Type of file to link or download. Not required. Available options: "fastq", "assembly". Default "fastq". To get both types, you can enter `--type fastq,assembly`
+
 * -i, --ignore
   > Ignore creating links for files that already exist.
 
