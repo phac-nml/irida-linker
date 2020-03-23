@@ -622,7 +622,7 @@ ngsArchiveLinker.pl - Get links for files stored in the NGS archive
 
 =head1 SYNOPSIS
 
-ngsArchiveLinker.pl -b <API URL> -p <projectId> -o <outputDirectory> [-s <sampleId> ...]
+ngsArchiveLinker.pl -b <API URL> -p <projectId> -o <outputDirectory> [-s <sampleId> ...] [-t <filetype>]
 
 =head1 DESCRIPTION
 
@@ -651,6 +651,10 @@ The base URL for the NGS Archive REST API.  Overrides config file setting.
 =item B<-s, --sample [ARG]>
 
 A sample id to get sequence files for.  Not required.  Multiple samples may be listed as -s 1 -s 2 -s 3...
+
+=item B<-t, --type [ARG]>
+
+Type of file to link or download.  Not required.  Available options: "fastq", "assembly".  Default "fastq".  To get both types, you can enter --type fastq,assembly
 
 =item B<-i, --ignore>
 
