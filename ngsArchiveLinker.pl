@@ -301,7 +301,7 @@ sub loopFileType{
 		}
 		else{
 			if(! -e $filename){
-				die "Error: Script cannot see a file to be linked: $filename.  Ensure you have access to the sequence files directory.";
+				die "Error: Script cannot see a file to be linked: $filename.  Ensure you have access to the sequence files and assemblies directory.";
 			}
 
 			linkFile($newfile,$filename,$duplicateLevel);
