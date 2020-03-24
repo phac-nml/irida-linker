@@ -117,6 +117,13 @@ if(! -d $directory){
 	exit(1);
 }
 
+if(!$fileType){
+	$fileType = "fastq";
+}
+elsif($fileType !~ /fastq|assembly/){
+	print "Error: filetype must be at least one of `fastq`, `assembly`.\n";
+	exit(1);
+}
 
 if(!$username){
 	print "Enter username: ";
@@ -130,10 +137,6 @@ if(!$password){
 	ReadMode('restore');
 	print "\n";
 	chomp $password;
-}
-
-if(!$fileType){
-	$fileType = "fastq";
 }
 
 my $agent = new LWP::UserAgent;
