@@ -20,6 +20,10 @@ my $s3 = Net::Amazon::S3->new(
   retry                 => 1
 );
 
+my $RESPONSE_OK = '200';
+my $RESPONSE_NOT_OK = '400';
+my $RESPONSE_OK_MSG = 'OK';
+
 my $s3Client = Net::Amazon::S3::Client->new( s3 => $s3 );
 my $bucket = $s3Client->bucket( name => $bucket_name );
 
@@ -37,12 +41,23 @@ sub downloadAwsFile {
     $path = substr($path, 1);
 
     my $object = $bucket->object( key => $path );
+
     if(getFileExtension($object->{key}) eq $type)
     {
-        $object->get_filename($output_file);
-        $::fileCount++;
+        eval { $object->get_filename($output_file) };
+        # If we want a warning to be spit out if the getting of an object from
+        # an s3 bucket dies then uncomment the following line:
+        # warn $@ if $@;
+
+        # if 'die' was not called when getting an object from an s3 bucket
+        if(!$@) {
+            print "** GET $href ==> $RESPONSE_OK $RESPONSE_OK_MSG\n";
+            $::fileCount++;
+        } else {
+            print "Unable to get file $href ==> $RESPONSE_NOT_OK => Key not found: $path\n";
+        }
     } else {
-        print "Incorrect content-type. $href was not downloaded";
+        print "Incorrect content-type. $href was not downloaded\n";
     }
 }
 

@@ -19,8 +19,11 @@ my $blobService = Net::Azure::StorageClient::Blob->new(
                                   container_name => $container_name,
                                   protocol => 'https');
 
+my $RESPONSE_OK = '200';
+
 # Downloads an individual sequence file from an Azure container
 sub downloadAzureFile {
+    my $href = shift;
     my $path = shift;
     my $output_file = shift;
     my $writeFile = shift;
@@ -34,8 +37,17 @@ sub downloadAzureFile {
     if ($writeFile) {
         $output_file = { filename => $output_file, headers => { 'ACCEPT' => $accept } };
         my $res = $blobService->get_blob( $path, $output_file );
-        $::fileCount++;
+
+        my $rc = $res->{_rc};
+        my $msg = $res->{_msg};
+        if($rc eq $RESPONSE_OK) {
+            print "** GET $href ==> $rc $msg\n";
+            $::fileCount++;
+        } else {
+            print "Unable to get file $href => $rc $msg\n";
+        }
     }
 }
+
 
 1;

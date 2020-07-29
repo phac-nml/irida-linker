@@ -460,9 +460,9 @@ sub downloadFile {
     }
 
     if ($storageType eq $AZURE) {
-        downloadAzureFile($filePath, $output, $writeFile, $accept);
+        downloadAzureFile($href, $filePath, $output, $writeFile, $accept);
     } elsif ($storageType eq $AWS){
-        downloadAwsFile($filePath, $output, $writeFile, $type);
+        downloadAwsFile($href, $filePath, $output, $writeFile, $type);
     } else {
         downloadLocalFile($href, $client, $accept, $writeFile, $agent, $head);
     }
