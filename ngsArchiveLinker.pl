@@ -18,6 +18,7 @@ use HTTP::Tiny;
 use strict;
 use warnings;
 
+
 if ( !@ARGV ) {    #if no args, print usage message
     pod2usage(0);
 }
@@ -25,8 +26,15 @@ if ( !@ARGV ) {    #if no args, print usage message
 my $version       = '1.0.2';
 my $print_version = 0;
 
-my $client_id     = "defaultLinker";
-my $client_secret = "defaultLinkerSecret";
+our $FALSE = 0;
+our $TRUE = 1;
+
+my $AZURE = 'azure';
+my $AWS = 'aws';
+
+my $client_id = "defaultLinker";
+my $client_secret = "defaultClientSecret";
+my $storageType = "local";
 
 use constant { FAIL_ON_DUPLICATE => 0, IGNORE_DUPLICATES => 1,
     RENAME_DUPLICATES => 2 };
@@ -103,7 +111,8 @@ if ( !$configFile ) {
 }
 
 #set up the config file if it's set
-my $config;
+our $config;
+
 if ( $configFile && -e $configFile ) {
     $config = new Config::Simple($configFile);
 
@@ -113,7 +122,22 @@ if ( $configFile && -e $configFile ) {
 
     #update the config values if they're in the config file
     $client_id     = $configClientId     if ($configClientId);
-    $client_secret = $configClientSecret if ($configClientId);
+    $client_secret = $configClientSecret if ($configClientSecret);
+
+    my $configStorageType = $config->param("filesystem.IRIDAFILESTORAGE");
+
+    $storageType = $configStorageType if ($configStorageType);
+
+    if($storageType eq $AZURE) {
+        require './IridaFileStorageAzureUtility.pl';
+        IridaFileStorageAzureUtility->import();
+    } elsif($storageType eq $AWS) {
+        require './IridaFileStorageAwsUtility.pl';
+        IridaFileStorageAwsUtility->import();
+    } else {
+        require './IridaFileStorageLocalUtility.pl';
+        IridaFileStorageLocalUtility->import();
+    }
 
 }
 elsif ( !-e $configFile ) {
@@ -207,11 +231,18 @@ foreach my $id ( keys %samples ) {
 }
 
 #globals counting the number of files ignored and linked
-my $fileCount   = 0;
+our $fileCount   = 0;
 my $ignoreCount = 0;
 
-createLinks( \%sampleFiles, $projectName, $directory, $duplicateLevel,
-    $flatDirectory, $download, $agent, $head );
+if($storageType eq 'local' ||
+   ($download == $TRUE && ($storageType eq 'aws' ||
+   $storageType eq 'azure')))
+{
+    createLinks( \%sampleFiles, $projectName, $directory, $duplicateLevel,
+        $flatDirectory, $download, $agent, $head );
+} else {
+    die "Download option (-d) must be set when running ngsArchiveLinker with cloud storage.";
+}
 
 #Get an OAuth2 token for the
 sub getToken {
@@ -324,7 +355,8 @@ sub loopFileType {
         if ($download) {
             downloadFile(
                 $fileref->{href}, $newfile,        $client,
-                $headers,         $duplicateLevel, $type
+                $headers,         $duplicateLevel, $type,
+                $fileref->{file}
             );
         }
         else {
@@ -415,6 +447,7 @@ sub downloadFile {
     my $headers          = shift;
     my $ignoreDuplicates = shift;
     my $type             = shift;
+    my $filePath = shift;
 
     my $writeFile = checkFileExistence( $output, $ignoreDuplicates );
 
@@ -426,15 +459,12 @@ sub downloadFile {
         $accept = "application/fasta";
     }
 
-    if ($writeFile) {
-        $client->show_progress(1);
-        $head->header( Accept => $accept );
-
-        my $req = HTTP::Request->new( "GET", $href, $head );
-        my $ret = $agent->request( $req, $writeFile );
-
-        $client->show_progress(0);
-        $fileCount++;
+    if ($storageType eq $AZURE) {
+        downloadAzureFile($filePath, $output, $writeFile, $accept);
+    } elsif ($storageType eq $AWS){
+        downloadAwsFile($filePath, $output, $writeFile, $type);
+    } else {
+        downloadLocalFile($href, $client, $accept, $writeFile, $agent, $head);
     }
 }
 
