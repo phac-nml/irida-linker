@@ -29,10 +29,12 @@ sub downloadAzureFile {
     my $writeFile = shift;
     my $accept = shift;
 
-    # the path has a leading slash which needs to be removed
+    # if the file path has a leading slash we remove it
     # before accessing the container otherwise the blob is not
     # found in the container
-    $path = substr($path, 1);
+    if(substr( $path, 0, 1 ) eq '/') {
+        $path = substr($path, 1);
+    }
 
     if ($writeFile) {
         $output_file = { filename => $output_file, headers => { 'ACCEPT' => $accept } };

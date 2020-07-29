@@ -35,10 +35,12 @@ sub downloadAwsFile {
     my $writeFile = shift;
     my $type = shift;
 
-    # the path has a leading slash which needs to be removed
+    # if the file path has a leading slash we remove it
     # before accessing the bucket otherwise the object is not
     # found in the bucket
-    $path = substr($path, 1);
+    if(substr( $path, 0, 1 ) eq '/') {
+        $path = substr($path, 1);
+    }
 
     my $object = $bucket->object( key => $path );
 
