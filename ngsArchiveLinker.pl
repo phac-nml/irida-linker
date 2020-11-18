@@ -22,7 +22,7 @@ if ( !@ARGV ) {    #if no args, print usage message
     pod2usage(0);
 }
 
-my $version       = '1.0.2';
+my $version       = '1.1.1';
 my $print_version = 0;
 
 my $client_id     = "defaultLinker";
