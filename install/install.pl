@@ -54,6 +54,14 @@ if($ret eq "y"){
         print OUT "[apiurls]\n";
 	print OUT "BASEURL=$ngsloc\n";
 
+	print OUT "\n";
+
+	my $iridaClientId = textOption("IRIDA Client ID?","");
+	my $iridaClientSecret = textOption("IRIDA Client Secret?", "");
+	print "Setting IRIDA client ID as $iridaClientId and client secret as $iridaClientSecret in $confFile\n";
+        print OUT "[credentials]\n";
+	print OUT "CLIENTID=$iridaClientId\n";
+	print OUT "CLIENTSECRET=$iridaClientSecret\n";
         
 	close OUT;
 }
