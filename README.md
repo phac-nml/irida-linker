@@ -40,6 +40,25 @@ Example: A project (Project 5) containing multiple samples (Sample 1, Sample 2,S
 
 A user is able to use the same output directory for multiple project links.  The new project directory will be created in the root output directory.
 
+## Configuration
+
+The NGS Archive linker uses a configuration file to store the details for connecting to IRIDA.  Your configuration file should include the URL of your IRIDA REST API (usually ending in `/api`) and OAuth2 client credentials for connecting to the API.  The linker requires a `password` grant client.  Information for setting up a client in IRIDA can be found at <https://phac-nml.github.io/irida-documentation/user/administrator/#managing-system-clients>.
+
+An example config file:
+```conf
+[apiurls]
+BASEURL=http://path/to/irida/api
+
+[credentials]
+CLIENTID=yourClientId
+CLIENTSECRET=yourClientSecret
+```
+
+This config file can be saved at one of the following locations:
+1. The same directory as the `ngsArchiveLinker.pl` script,
+2. `$HOME`/.irida/ngs-archive-linker.conf,
+3. `/etc/irida/ngs-archive-linker.conf`.
+
 ## Running NGS Archive Linker
 ### Arguments
 * -p, --projectId [ARG]
