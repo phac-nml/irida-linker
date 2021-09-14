@@ -45,7 +45,7 @@ A user is able to use the same output directory for multiple project links.  The
 The NGS Archive linker uses a configuration file to store the details for connecting to IRIDA.  Your configuration file should include the URL of your IRIDA REST API (usually ending in `/api`) and OAuth2 client credentials for connecting to the API.  The linker requires a `password` grant client.  Information for setting up a client in IRIDA can be found at <https://phac-nml.github.io/irida-documentation/user/administrator/#managing-system-clients>.
 
 An example config file:
-```conf
+```ini
 [apiurls]
 BASEURL=http://path/to/irida/api
 
