@@ -41,114 +41,135 @@ Example: A project (Project 5) containing multiple samples (Sample 1, Sample 2,S
 A user is able to use the same output directory for multiple project links.  The new project directory will be created in the root output directory.
 
 ## Running NGS Archive Linker
+
 ### Arguments
-* -p, --projectId [ARG]
-  > The ID of the project to get data from. (required)
 
-* -o, --output [ARG]
-  > A directory to output the collection of links. (Default: Current working directory)
+* `-p`, `--projectId [ARG]`: The ID of the project to get data from. (required)
 
-* -c, --config [ARG]
-  > The location of the config file. Not required if --baseURL option is used. (Default $HOME/.irida/ngs-archive-linker.conf, /etc/irida/ngs-archive.conf)
+* `-o`, `--output [ARG]`: A directory to output the collection of links. (Default: Current working directory)
 
-* -b, --baseURL [ARG]
-  > The base URL for the NGS Archive REST API.  Overrides config file setting.
+* `-c`, `igig [ARG]`: The location of the config file. Not required if --baseURL option is used. (Default $HOME/.irida/ngs-archive-linker.conf, /etc/irida/ngs-archive.conf)
 
-* -s, --sample [ARG]
-  > A sample id to get sequence files for.  Not required.  Multiple samples may be listed as -s 1 -s 2 -s 3...
+* `-b`, `--baseURL [ARG]`: The base URL for the NGS Archive REST API.  Overrides config file setting.
 
-* -t, --type [ARG]
-  > Type of file to link or download. Not required. Available options: "fastq", "assembly". Default "fastq". To get both types, you can enter `--type fastq,assembly`
+* `-s`, `--sample [ARG]`: A sample id to get sequence files for.  Not required.  Multiple samples may be listed as -s 1 -s 2 -s 3...
 
-* -i, --ignore
-  > Ignore creating links for files that already exist.
+* `-t`, `--type [ARG]`: Type of file to link or download. 
+Not required. Available options: "fastq", "assembly". Default "fastq". To get both types, you can enter `--type fastq,assembly`
 
-* -r, --rename
-  > Rename existing files with _<number> suffix. Useful for topup runs with similar filenames. NOTE: This option overrides the --ignore option.
+* `-i`, `--ignore`: Ignore creating links for files that already exist.
 
-*  --flat  
-  > Create links or files in a flat directory under the project name rather than in sample directories.
+* `-r`, `--rename`: Rename existing files with `_<number>` suffix. Useful for top up runs with similar filenames. 
+**NOTE**: This option overrides the *--ignore* option.
+
+*  `--flat`  : Create links or files in a flat directory under the project name rather than in sample directories.
 
 
-* --username
-  > The username to use for API requests.  Note: if this option is not entered it will be requested during running of the script.
+* `--username`: The username to use for API requests.  Note: if this option is not entered it will be requested during running of the script.
 
-* --password
-  >The password to use for API requests.  Note: if this option is not entered it will be requested during running of the script.
+* `--password`: The password to use for API requests.  Note: if this option is not entered it will be requested during running of the script.
 
-* --download
-  > Option to download files from the REST API instead of softlinking.  Note: Files may be quite large.  This option is not recommended if you have access to the sequencing filesystem.
+* `--download`: Option to download files from the REST API instead of softlinking.  Note: Files may be quite large.  This option is not recommended if you have access to the sequencing filesystem.
 
-* -v, --verbose
-  > Print verbose messages.
+* `-v`, `--verbose`: Print verbose messages.
 
-* -h, --help
-  > Display a help message.
+* `-h`, `--help`: Display a help message.
 
 ### Usage Examples
+
 #### Linking all files in a project
+
 To get links for all files within a project, you only need to provide the project ID to NGS Archive linker.  The linker will request the list of samples from the REST API to determine which samples it must retrieve.
 
 Example -- Linking all samples for project *4* to directory *files*:
 
-	$ ngsArchiveLinker.pl --baseURL http://irida.ca/api --project 4 --output files
-	Enter username: test
-	Enter password: 
-	Listing all samples from project 4
-	Created 18 files for 9 samples in files/4
+```bash
+ngsArchiveLinker.pl --baseURL http://irida.ca/api --project 4 --output files
+```
 
+```text
+Enter username: test
+Enter password: 
+Listing all samples from project 4
+Created 18 files for 9 samples in files/4
+```
 #### Linking selected samples within a project
+
 To get links for particular samples within a project, you must provide the project ID and the sample IDs you would like to get links for.
 	
 Example -- Linking samples 44, 45, and 46 for project *4* to directory *files*:
 
-	$ ngsArchiveLinker.pl -b http://irida.ca/api --project 4 --sample 44 --sample 45 --sample 46 --output files
-	Enter username: test
-	Enter password: 
-	Reading samples 44,45,46 from project 4
-	Created 6 files for 3 samples in files/4
+```bash
+ngsArchiveLinker.pl -b http://irida.ca/api --project 4 --sample 44 --sample 45 --sample 46 --output files
+```
+
+```text
+Enter username: test
+Enter password: 
+Reading samples 44,45,46 from project 4
+Created 6 files for 3 samples in files/4
+```
 
 #### Linking assemblies from a project
+
 To get links for assemblies within a project, you must add the `--type assembly` option.  This will tell the linker that you want assemblies instead of sequence file `.fastq` files
 	
 Example -- Linking all assemblies from project *4* to directory *files*:
 
-	$ ngsArchiveLinker.pl -b http://irida.ca/api --project 4 --type assembly --output files
-	Enter username: test
-	Enter password: 
-	Listing all samples from project 4
-	Created 1 files for 1 samples in files/4
+```bash
+ngsArchiveLinker.pl -b http://irida.ca/api --project 4 --type assembly --output files
+```
+
+```text
+Enter username: test
+Enter password: 
+Listing all samples from project 4
+Created 1 files for 1 samples in files/4
+```
 
 #### Getting new links for an already existing project
+
 To get links for a project that already exists on the filesystem, you can use the **--ignore** option.  This will skip over files and samples that have already been linked and only create links for the new samples.
 
 Example -- 7 samples already exist.  Retrieve rest of new samples from project 4:
 
-	$ ngsArchiveLinker.pl -b http://irida.ca/api --project 4 --output files --ignore
-	Enter username: test
-	Enter password: 
-	Listing all samples from project 4
-	Created 4 files for 9 samples in files/4
-	Skipped 14 files as they already exist
+```bash
+ngsArchiveLinker.pl -b http://irida.ca/api --project 4 --output files --ignore
+```
+
+```text
+Enter username: test
+Enter password: 
+Listing all samples from project 4
+Created 4 files for 9 samples in files/4
+Skipped 14 files as they already exist
+```
 
 #### Downloading files
+
 Downloading files rather than linking can be acheived by using the **--download** option.  Arguments for other usages remain the same.
 
 Example -- Download samples 43 and 51 from project *4* to directory *files*:
 
-	$ ngsArchiveLinker.pl -b http://irida.ca/api --project 4 --sample 43 --sample 51 --output files --download
-	Enter username: test
-	Enter password: 
-	Reading samples 43,51 from project 4
-	** GET http://irida.ca/api/projects/4/samples/51/sequenceFiles/32 ==> 200 OK (11s)
-	** GET http://irida.ca/api/projects/4/samples/51/sequenceFiles/37 ==> 200 OK (10s)
-	** GET http://irida.ca/api/projects/4/samples/43/sequenceFiles/31 ==> 200 OK (11s)
-	** GET http://irida.ca/api/projects/4/samples/43/sequenceFiles/43 ==> 200 OK (11s)
-	Created 4 files for 2 samples in files/4
+```bash
+ngsArchiveLinker.pl -b http://irida.ca/api --project 4 --sample 43 --sample 51 --output files --download
+```
+
+```text
+Enter username: test
+Enter password: 
+Reading samples 43,51 from project 4
+** GET http://irida.ca/api/projects/4/samples/51/sequenceFiles/32 ==> 200 OK (11s)
+** GET http://irida.ca/api/projects/4/samples/51/sequenceFiles/37 ==> 200 OK (10s)
+** GET http://irida.ca/api/projects/4/samples/43/sequenceFiles/31 ==> 200 OK (11s)
+** GET http://irida.ca/api/projects/4/samples/43/sequenceFiles/43 ==> 200 OK (11s)
+Created 4 files for 2 samples in files/4
+```
 
 Note: Downloading files is not recommended if your computer has access to the NGS Archive filesystem as sequence files can be large.
 
 ## Errors
+
 * Error: File files/4/46/f1_1.fastq already exists
   > A file that the linker is trying to create already exists on your local filesystem.  It must be removed to be re-linked.  If you would like to ignore existing files and only link new files, use the **--ignore** option.
 
@@ -160,3 +181,26 @@ Note: Downloading files is not recommended if your computer has access to the NG
 
 * Error: Requested resource wasn't found at http://irida.ca/api/...
   > The sample or project that you requested does not exist in the NGS Archive REST API.  Check your options for the project id (-p or --project) and sample id (-s or --sample) and try again.
+
+## Configuration file
+
+A configuration file, structured as shown below,
+can be used to feed URLs (`BASEURL` and `GALAXYURL`) and the Galaxy API key (`GALAXYAPIKEY`).
+
+Optionally, `USERNAME` and `PASSWORD` can also be stored in the file,
+but would be overridden if `--password` or `--username` are supplied.
+
+The default locations for the configuration file are `$HOME/.irida/ngs-archive-linker.conf` and ` /etc/irida/ngs-archive.conf`, but a different path can be supplied via `--config FILE`.
+
+```text
+[apiurls]
+BASEURL=${BASEURL}
+GALAXYURL=${BASEURL}
+
+[credentials]
+GALAXYAPIKEY=${GALAXYAPIKEY}
+CLIENTID=${UPLOADER}
+CLIENTSECRET=${CLIENTSECRET}
+USERNAME=${IRIDA_USERNAME}
+PASSWORD=${IRIDA_PASSWORD}
+```
