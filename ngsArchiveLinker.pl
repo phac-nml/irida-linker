@@ -22,7 +22,7 @@ if ( !@ARGV ) {    #if no args, print usage message
     pod2usage(0);
 }
 
-my $version       = '1.0.2';
+my $version       = '1.1.1';
 my $print_version = 0;
 
 my $client_id     = "defaultLinker";
@@ -238,8 +238,11 @@ sub getToken {
 
     if ( !defined $tokenstr ) {
         print "Couldn't get OAuth token: " . $response->{'status'} . "\n";
-        print $oauth_info->{'error'} . ': '
-          . $oauth_info->{'error_description'} . "\n";
+        print $oauth_info->{'error'};
+        if (exists($oauth_info->{'error_description'})) {
+            print ': ' . $oauth_info->{'error_description'};
+        }
+        print "\n";
         exit(1);
     }
 

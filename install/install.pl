@@ -5,6 +5,8 @@ use strict;
 use warnings;
 
 use constant DEFAULT_REST_URL=>"http://localhost:8080/api";
+use constant DEFAULT_CLIENT_ID=>"testClient";
+use constant DEFAULT_CLIENT_SECRET=>"testClientSecret";
 
 
 #Install PERL packages
@@ -54,14 +56,12 @@ if($ret eq "y"){
         print OUT "[apiurls]\n";
 	print OUT "BASEURL=$ngsloc\n";
 
-	print OUT "\n";
-
-	my $iridaClientId = textOption("IRIDA Client ID?","");
-	my $iridaClientSecret = textOption("IRIDA Client Secret?", "");
-	print "Setting IRIDA client ID as $iridaClientId and client secret as $iridaClientSecret in $confFile\n";
+	my $clientId = textOption("IRIDA client id?",DEFAULT_CLIENT_ID);
+	my $clientSecret = textOption("IRIDA client secret?",DEFAULT_CLIENT_SECRET);
+	print "Setting client details as $clientId/$clientSecret in $confFile\n";
         print OUT "[credentials]\n";
-	print OUT "CLIENTID=$iridaClientId\n";
-	print OUT "CLIENTSECRET=$iridaClientSecret\n";
+	print OUT "CLIENTID=$clientId\n";
+	print OUT "CLIENTSECRET=$clientSecret\n";
         
 	close OUT;
 }
