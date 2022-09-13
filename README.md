@@ -184,21 +184,16 @@ Note: Downloading files is not recommended if your computer has access to the NG
 
 ## Configuration file
 
-A configuration file, structured as shown below,
-can be used to feed URLs (`BASEURL` and `GALAXYURL`) and the Galaxy API key (`GALAXYAPIKEY`).
-
-Optionally, `USERNAME` and `PASSWORD` can also be stored in the file,
-but would be overridden if `--password` or `--username` are supplied.
+A configuration file, structured as shown below, can be used to feed URLs (`BASEURL`) and, optionally, `USERNAME` and `PASSWORD` can also be stored in the file, but would be overridden if `--password` or `--username` are supplied.
 
 The default locations for the configuration file are `$HOME/.irida/ngs-archive-linker.conf` and ` /etc/irida/ngs-archive.conf`, but a different path can be supplied via `--config FILE`.
 
 ```text
 [apiurls]
 BASEURL=${BASEURL}
-GALAXYURL=${BASEURL}
+
 
 [credentials]
-GALAXYAPIKEY=${GALAXYAPIKEY}
 CLIENTID=${UPLOADER}
 CLIENTSECRET=${CLIENTSECRET}
 USERNAME=${IRIDA_USERNAME}
