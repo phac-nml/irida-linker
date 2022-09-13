@@ -238,8 +238,11 @@ sub getToken {
 
     if ( !defined $tokenstr ) {
         print "Couldn't get OAuth token: " . $response->{'status'} . "\n";
-        print $oauth_info->{'error'} . ': '
-          . $oauth_info->{'error_description'} . "\n";
+        print $oauth_info->{'error'};
+        if (exists($oauth_info->{'error_description'})) {
+            print ': ' . $oauth_info->{'error_description'};
+        }
+        print "\n";
         exit(1);
     }
 
