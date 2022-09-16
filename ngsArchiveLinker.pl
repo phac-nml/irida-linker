@@ -22,7 +22,7 @@ if ( !@ARGV ) {    #if no args, print usage message
     pod2usage(0);
 }
 
-my $version       = '1.1.1';
+my $version       = '1.2.0';
 my $print_version = 0;
 
 my $client_id     = "defaultLinker";
@@ -105,11 +105,25 @@ if ( !$configFile ) {
 #set up the config file if it's set
 my $config;
 if ( $configFile && -e $configFile ) {
+    if ($vverbose) {
+        print STDERR "Using configuration $configFile\n";
+    }
     $config = new Config::Simple($configFile);
 
     #get the oauth2 id and secret if they're set
     my $configClientId     = $config->param("credentials.CLIENTID");
     my $configClientSecret = $config->param("credentials.CLIENTSECRET");
+
+    # If the configuration file contains USERNAME and PASSWORD, and they were NOT supplied via command line
+    if (not defined $username) {
+        print STDERR "Setting username from config file: ", $config->param("credentials.USERNAME"), "\n" if ($vverbose);
+        $username = $config->param("credentials.USERNAME");
+    }
+
+    if (not defined $password) {
+        print STDERR "Setting password from config file\n" if ($vverbose);
+        $password = $config->param("credentials.PASSWORD");
+    }
 
     #update the config values if they're in the config file
     $client_id     = $configClientId     if ($configClientId);
