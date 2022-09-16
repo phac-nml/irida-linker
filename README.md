@@ -40,9 +40,11 @@ Example: A project (Project 5) containing multiple samples (Sample 1, Sample 2,S
 
 A user is able to use the same output directory for multiple project links.  The new project directory will be created in the root output directory.
 
+
 ## Configuration
 
-The NGS Archive linker uses a configuration file to store the details for connecting to IRIDA.  Your configuration file should include the URL of your IRIDA REST API (usually ending in `/api`) and OAuth2 client credentials for connecting to the API.  The linker requires a `password` grant client.  Information for setting up a client in IRIDA can be found at <https://phac-nml.github.io/irida-documentation/user/administrator/#managing-system-clients>.
+The NGS Archive linker uses a configuration file to store the details for connecting to IRIDA.  Your configuration file should include the URL of your IRIDA REST API (usually ending in `/api`) and OAuth2 client credentials for connecting to the API.  Optionally, `USERNAME` and `PASSWORD` can also be stored in the file, but would be overridden if `--password` or `--username` are supplied.  The linker requires a `password` grant client.  Information for setting up a client in IRIDA can be found at <https://phac-nml.github.io/irida-documentation/user/administrator/#managing-system-clients>.
+
 
 An example config file:
 ```ini
@@ -52,6 +54,8 @@ BASEURL=http://path/to/irida/api
 [credentials]
 CLIENTID=yourClientId
 CLIENTSECRET=yourClientSecret
+USERNAME=${IRIDA_USERNAME}
+PASSWORD=${IRIDA_PASSWORD}
 ```
 
 This config file can be saved at one of the following locations:
@@ -200,21 +204,3 @@ Note: Downloading files is not recommended if your computer has access to the NG
 
 * Error: Requested resource wasn't found at http://irida.ca/api/...
   > The sample or project that you requested does not exist in the NGS Archive REST API.  Check your options for the project id (-p or --project) and sample id (-s or --sample) and try again.
-
-## Configuration file
-
-A configuration file, structured as shown below, can be used to feed URLs (`BASEURL`) and, optionally, `USERNAME` and `PASSWORD` can also be stored in the file, but would be overridden if `--password` or `--username` are supplied.
-
-The default locations for the configuration file are `$HOME/.irida/ngs-archive-linker.conf` and ` /etc/irida/ngs-archive.conf`, but a different path can be supplied via `--config FILE`.
-
-```text
-[apiurls]
-BASEURL=${BASEURL}
-
-
-[credentials]
-CLIENTID=${UPLOADER}
-CLIENTSECRET=${CLIENTSECRET}
-USERNAME=${IRIDA_USERNAME}
-PASSWORD=${IRIDA_PASSWORD}
-```
